@@ -1,0 +1,25 @@
+dngn.png
+#1#
+name=nothing
+image1-8=0,0;
+strength=9999
+lemit=0,0,0
+#1#
+name=stone floor
+image1+8=6,4;
+strengthdec=25%
+strength=18
+flammable=9999
+lemit=0,0,0
+#2#
+name=stone wall
+image1+8=1,0;
+strengthdec=20%
+strength=25
+lemit=0,0,0
+#3#
+name=lava
+image1-5=10,24;
+image5-8=13,24;
+strength=9999
+lemit=0,0,0
