@@ -254,6 +254,10 @@ class LOCALMAP:
 			debugMessage(4,"  Drawn a new chunk!")
 			#genedchunks+=1
 		return self.cachedimage
+	def requestTile(self,position):
+		return self.mapChunk[position[0],position[1]]
+	def  modifyTile(self,position,newtype):
+		self.mapChunk[position[0],position[1]]=newtype
 
 class GLOBALMAP:
 	def __init__(self,parent,big,small,climate,lake):
@@ -283,9 +287,9 @@ class GLOBALMAP:
 			return 1
 		else:
 			return 0
-	def drawMap(self, screen, tileset, position):
-		positionX = position[0]
-		positionY = position[1]
+	def drawMap(self, screen, tileset, player, objectset):
+		positionX = player.camPosition[0]
+		positionY = player.camPosition[1]
                 screen.fill((0,0,0))
 		for x in range(0,2):
 			for y in range(0,2):
@@ -299,7 +303,7 @@ class GLOBALMAP:
                                 
                                 if x == 0 and y == 0:
                                         self.uncacheChunks((chunk_x,chunk_y))
-                                        
+                                        screen.blit(objectset.image,pos,objectset.object[0].image)
 				screen.blit(chunk.requestChunkImage(tileset), pos)
 	def uncacheChunks(self,position):
 		a = self.parent.settings.chunkCacheRange
@@ -334,20 +338,23 @@ class OBJECTSET:
 		self.image  = load_image(filename)
 		self.object = []
 		debugMessage(5,"  Object set initialized.")
-		return 1
 
 class OBJECT:
 	def __init__(self):
-		self.pos=(0,0)
+		self.position=(0,0)
 		self.type=0
+
+class PLAYER:
+	def __init__(self):
+		self.camPosition  = [0,0]
+		#self.camMovement = (0,0)
+		self.color=(0,0,0)
 
 class GAME:
 	def __init__(self):
+		self.keymovX=0
+		self.keymovY=0
 		self.gameversion=""
-		self.camPositionX = 0
-		self.camPositionY = 0
-		self.camMovementX = 0
-		self.camMovementY = 0
 		self.run = 0
 		debugMessage(5,"Starting the game")
 		pygame.init()
@@ -357,6 +364,15 @@ class GAME:
 		self.clock = pygame.time.Clock()
 		
 		self.screen   = pygame.display.set_mode((640, 480))
+		
+		self.players=[PLAYER()]
+		self.objectset=OBJECTSET("player.png")
+		self.objects  = []
+		self.objectset.object   += [OBJECTDEF()]
+		self.objectset.object[0].image = Rect(128,32,32,32) 
+		self.objects+=[OBJECT()]
+		#self.players[0].camPosition=(self.objects[0].position[0]-20,self.objects[0].position[1]-15)
+		
 		self.settings = SETTINGS()
 		self.tileset  = TILESET()
 		self.gamemap  = GLOBALMAP(self,72,8,64,24)
@@ -373,10 +389,12 @@ class GAME:
 		debugMessage(5," Running main loop...")
 		while(self.run):
 			self.clock.tick(30)
-			self.camPositionX+=self.camMovementX
-			self.camPositionY+=self.camMovementY
+			self.players[0].camPosition[0]+=self.keymovX
+			self.players[0].camPosition[1]+=self.keymovY
+			#self.camPositionX+=self.camMovementX
+			#self.camPositionY+=self.keymovY
 			self.checkEvents()
-			self.gamemap.drawMap(self.screen,self.tileset,(self.camPositionX,self.camPositionY))
+			self.gamemap.drawMap(self.screen,self.tileset,self.players[0],self.objectset)
 			
 			#self.screen.blit(self.tileset.tileset,(0,0),self.tileset.tileDefinition[1].images[0])
 			pygame.display.flip()
@@ -394,46 +412,46 @@ class GAME:
 				elif event.key == K_RETURN:
 					self.gamemap=GLOBALMAP(self,72,8,64,24)
 				elif event.key == K_KP1:
-					self.camMovementX=-1
-					self.camMovementY=1
+					self.keymovX=-1
+					self.keymovY=1
 				elif event.key == K_KP2:
-					self.camMovementY=1
+					self.keymovY=1
 				elif event.key == K_KP3:
-					self.camMovementY=1
-					self.camMovementX=1
+					self.keymovY=1
+					self.keymovX=1
 				elif event.key == K_KP4:
-					self.camMovementX=-1
+					self.keymovX=-1
 				elif event.key == K_KP6:
-					self.camMovementX=1
+					self.keymovX=1
 				elif event.key == K_KP7:
-					self.camMovementX=-1
-					self.camMovementY=-1
+					self.keymovX=-1
+					self.keymovY=-1
 				elif event.key == K_KP8:
-					self.camMovementY=-1
+					self.keymovY=-1
 				elif event.key == K_KP9:
-					self.camMovementY=-1
-					self.camMovementX=1
+					self.keymovY=-1
+					self.keymovX=1
 			elif event.type == KEYUP:
 				if event.key == K_KP1:
-					self.camMovementX=0
-					self.camMovementY=0
+					self.keymovX=0
+					self.keymovY=0
 				elif event.key == K_KP2:
-					self.camMovementY=0
+					self.keymovY=0
 				elif event.key == K_KP3:
-					self.camMovementY=0
-					self.camMovementX=0
+					self.keymovY=0
+					self.keymovX=0
 				elif event.key == K_KP4:
-					self.camMovementX=0
+					self.keymovX=0
 				elif event.key == K_KP6:
-					self.camMovementX=0
+					self.keymovX=0
 				elif event.key == K_KP7:
-					self.camMovementX=0
-					self.camMovementY=0
+					self.keymovX=0
+					self.keymovY=0
 				elif event.key == K_KP8:
-					self.camMovementY=0
+					self.keymovY=0
 				elif event.key == K_KP9:
-					self.camMovementY=0
-					self.camMovementX=0
+					self.keymovY=0
+					self.keymovX=0
 			elif event.type == MOUSEBUTTONDOWN:
 				continue
 			elif event.type is MOUSEBUTTONUP:
