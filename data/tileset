@@ -22,4 +22,10 @@ name=lava
 image1-5=10,24;
 image5-8=13,24;
 strength=9999
+lemit=100,50,0
+#4#
+name=water
+image1-5=14,24;
+image5-8=17,24;
+strength=9999
 lemit=0,0,0

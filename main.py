@@ -1,29 +1,41 @@
-import os, pygame, random, perlin
+import sys, os, pygame, random, perlin
 from pygame.locals import *
 
 if not pygame.font: print 'Warning, fonts disabled'
 if not pygame.mixer: print 'Warning, sound disabled'
 
-datapath="data/"
+if(len(sys.argv)>2):
+	if sys.argv[0] == "-d": datapath=sys.argv[1]
+else:	
+	datapath="data"
+datapath="data"
 
 def load_image(name):
-	fullname = datapath+name
+	fullname = os.path.join(datapath, name)
 	try:
 		image = pygame.image.load(fullname)
 	except pygame.error, message:
-		print 'Cannot load image:', fullname
+		debugMessage(1, 'Cannot load image:' + fullname)
 		raise SystemExit, message
 	image = image.convert()
 	return image
 
-def debugMessage(string):
-	print string
+def debugMessage(messageType,string):
+	a=""
+	if   messageType==0: a="\033[101m[FATAL ERROR]"
+	elif messageType==1: a="\033[100m\033[91m[ERROR]"
+	elif messageType==2: a="\033[91m[WARNING]"
+	elif messageType==3: a="\033[94m[NOTICE]" #Regular notice
+	elif messageType==4: a="\033[92m[NOTICE]" #Succes  notice
+	elif messageType==5: a="\033[95m[NOTICE]" #Special notice
+	print a+string+"\033[0m"
+	if   messageType==0: exit()
 
 class SETTINGS: #Holds settings, this have got single instance in main GAME class. 
 	def __init__(self):
 		#Set default settings
-		self.chunkCacheRange = 3
-		self.imageCacheRange = 2
+		self.chunkCacheRange = 4
+		self.imageCacheRange = 3
 		self.renderRange     = (0,2)
 		self.chunkSize       = (32,32)
 
@@ -50,12 +62,12 @@ class GENERATOR:#This class holds instances of perlin.PerlinNoise used in genera
 		self.b_scale=2
 		self.l_scale=1
 		self.c_scale=4
-		debugMessage("Initializing generator...")
+		debugMessage(3,"  Initializing generator...")
 		self.big_feature   =perlin.PerlinNoise((big,big),perlin.ease_interpolation)
 		self.small_feature =perlin.PerlinNoise((small,small),perlin.ease_interpolation)
 		self.climate	   =perlin.PerlinNoise((climate,climate),perlin.ease_interpolation)
 		self.lakes		   =perlin.PerlinNoise((lake,lake),perlin.ease_interpolation)
-		debugMessage("Generator initialized!")
+		debugMessage(4,"   Generator initialized!")
 
 class IMAGEMAP:
 	def __init__(self,datafile):
@@ -63,13 +75,14 @@ class IMAGEMAP:
 
 class TILESET:
 	def __init__(self):
-		debugMessage("Creating tileset object...")
+		debugMessage(3,"Creating tileset object...")
 		self.tileset=[]
 		self.tileDefinition=[]
-		debugMessage("Tileset created!")
+		debugMessage(4," Tileset created!")
 	def fromFile(self,filename):
-		debugMessage("Trying to load tileset from file: "+ datapath + filename)
-		FILE=open(datapath+filename,"r")
+		debugMessage(3," Trying to load tileset from file: "+ os.path.join(datapath, filename))
+		if not os.path.exists(os.path.join(datapath, filename)): debugMessage(0,"   Tileset file not located")
+		FILE=open(os.path.join(datapath, filename),"r")
 		full=FILE.read()
 		cchar=''
 		current=''
@@ -100,7 +113,7 @@ class TILESET:
 					curTile=int(current)
 					while(len(self.tileDefinition)<curTile+1):
 						self.tileDefinition+= [TILE()]
-					debugMessage("Loading tile "+current)
+					debugMessage(3,"Loading tile "+current)
 					mode=1
 					current=''
 			elif mode == 1:  #This reads name of the property, like: "name="
@@ -163,19 +176,20 @@ class TILESET:
 class LOCALMAP:
 	#genedchunks=0
 	def generate(self,generator,positionX,positionY):
-		debugMessage("Generating chunk...")
-		#rmatrix=[0,0,0,0]
+		debugMessage(3,"  Generating chunk...")
+		rmatrix=[0,0,0,0]
 		#for z in range(0,2):
 		#	if z==0:
 		#		a=generator.big_feature
 		#		a=generator.small_feature
 		#	for x in range(0,32):
 		#		for y in range(0,32):
-		#			#print "blah"
+					#print "blah"
 		for x in range(0,32):
 			self.mapChunk+=[[]]
 			self.tileVariation+=[[]]
 			for y in range(0,32):
+				tilevar=random.randint(0,4)
 				tile=0
 				nx1 = (x+positionX*32) / float(generator.b)
 				ny1 = (y+positionY*32) / float(generator.b)
@@ -192,6 +206,18 @@ class LOCALMAP:
 						tile=3
 					else:
 						tile=1
+				elif 0.45 > v3 > 0.38:
+					if(v2 < 0.32  ):
+						tile=4
+						tilevar=random.randint(2,4)
+					else:
+						tile=1
+				elif v3 > 0.45:
+					if(v2 < 0.32  ):
+						tilevar=random.randint(0,2)
+						tile=4
+					else:
+						tile=1
 				else:
 					if( v1 < -0.15  ): #open air
 						if( v2 > 0.4  ):
@@ -206,8 +232,8 @@ class LOCALMAP:
 				#Actual generation code end
 				self.mapChunk[x]+=[tile]
 				#print str(len(self.mapChunk)) + ":" + str(len(self.mapChunk[x]))
-				self.tileVariation[x]+=[random.randint(0,4)]
-		debugMessage("Chunk generated("+str(positionX)+","+str(positionY)+")")
+				self.tileVariation[x]+=[tilevar]
+		debugMessage(4,"   Chunk generated("+str(positionX)+","+str(positionY)+")")
 	def __init__(self,generator,positionX,positionY):
 		self.modified=0
 		#self.genedchunks=0
@@ -225,7 +251,7 @@ class LOCALMAP:
 					pos=(x*32,y*32)
 					clip=tileset.tileDefinition[self.mapChunk[x][y]].images[self.tileVariation[x][y]]
 					self.cachedimage.blit(tileset.tileset,pos,clip)
-			debugMessage("Drawn a new chunk!")
+			debugMessage(4,"  Drawn a new chunk!")
 			#genedchunks+=1
 		return self.cachedimage
 
@@ -234,10 +260,10 @@ class GLOBALMAP:
 		self.chunkCollection={}
 		self.parent=parent
 		self.generator=[]
-		debugMessage("Initializing world map...")
+		debugMessage(3," Initializing world map...")
 		self.chunkCollection={}
 		self.generator=GENERATOR(big,small,climate,lake)
-		debugMessage("World map initialized")
+		debugMessage(3," World map initialized")
 	def requestChunkImage(self, pos):
 		if not self.chunkCollection.has_key(pos):
 			self.chunkCollection[pos]=LOCALMAP(self.generator,pos[0],pos[1])
@@ -246,11 +272,17 @@ class GLOBALMAP:
 	def requestChunkDeletion(self, pos):
 		if self.chunkCollection.has_key(pos) and not self.chunkCollection[pos].modified:
 			del self.chunkCollection[pos]
-			debugMessage("Deleted chunk"+str(pos)+"!")
+			#debugMessage("Deleted chunk"+str(pos)+"!")
 			return 1
 		else:
 			return 0
-		#return LOCALMAP(self.generator,x,y)
+	def requestChunkImageDeletion(self, pos):
+		if self.chunkCollection.has_key(pos) and not self.chunkCollection[pos].cachedimage=="NULL":
+			self.chunkCollection[pos].cachedimage="NULL"
+			#debugMessage("Deleted chunk"+str(pos)+"!")
+			return 1
+		else:
+			return 0
 	def drawMap(self, screen, tileset, position):
 		positionX = position[0]
 		positionY = position[1]
@@ -278,38 +310,67 @@ class GLOBALMAP:
 		for y in range(position[1]-a+1,position[1]+a-1):
 			b+=self.requestChunkDeletion((-a + position[0] , y))
 			b+=self.requestChunkDeletion((a  + position[0] , y))
-		if(b>0): debugMessage("Deleted " + str(b) +" chunks!")
+		a2 = self.parent.settings.imageCacheRange
+		b2=0
+		for x in range(position[0]-a2,position[0]+a2):
+			b2+=self.requestChunkImageDeletion((x , -a2 + position[1]))
+			b2+=self.requestChunkImageDeletion((x ,  a2 + position[1]))
+		for y in range(position[1]-a2+1,position[1]+a-1):
+			b2+=self.requestChunkImageDeletion((-a2 + position[0] , y))
+			b2+=self.requestChunkImageDeletion((a2  + position[0] , y))
+		if(b>0 or b2>0): debugMessage(5, "Deleted " + str(b) +" chunks and " +str(b+b2) + " cached images!")
 		return 1
+
+class OBJECTDEF:
+	def __init__(self):
+		self.image=Rect(0,0,32,32)
+		self.owner=0
+		self.props=""
+
+class OBJECTSET:
+	def __init__(self,filename):
+		debugMessage(5," Opening objects image file.")
+		#if not os.path.exists(os.path.join(datapath, filename)): debugMessage(0,"   Object images file not located!")
+		self.image  = load_image(filename)
+		self.object = []
+		debugMessage(5,"  Object set initialized.")
+		return 1
+
+class OBJECT:
+	def __init__(self):
+		self.pos=(0,0)
+		self.type=0
 
 class GAME:
 	def __init__(self):
+		self.gameversion=""
 		self.camPositionX = 0
 		self.camPositionY = 0
 		self.camMovementX = 0
 		self.camMovementY = 0
 		self.run = 0
-		debugMessage("Starting the game")
+		debugMessage(5,"Starting the game")
 		pygame.init()
-		pygame.display.set_caption('My game')
 		pygame.mouse.set_visible(0)
 		self.run=1
-		debugMessage("Game started")
+		debugMessage(3," Game started")
 		self.clock = pygame.time.Clock()
 		
-		#TODO: Move these to config files:
-		self.settings = SETTINGS()
-		self.settings.chunkCacheRange =    3
-		self.settings.imageCacheRange =    2
-		self.settings.renderRange     =  (0,2)
-		self.settings.chunkSize       = (32,32)
-		  
 		self.screen   = pygame.display.set_mode((640, 480))
+		self.settings = SETTINGS()
 		self.tileset  = TILESET()
-		self.tileset.fromFile("tileset")
 		self.gamemap  = GLOBALMAP(self,72,8,64,24)
-	
+		self.tileset.fromFile("tileset")
+		
+		f=open(os.path.join(datapath, "config.txt"))
+		ff=f.read()
+		f.close()
+		try: exec(ff)
+		except: debugMessage(1,"Something is wrong with config file!")
+		pygame.display.set_caption("Usumora["+self.gameversion+"]")
+		
 	def main(self):
-		debugMessage("Running main loop...")
+		debugMessage(5," Running main loop...")
 		while(self.run):
 			self.clock.tick(30)
 			self.camPositionX+=self.camMovementX
@@ -319,7 +380,7 @@ class GAME:
 			
 			#self.screen.blit(self.tileset.tileset,(0,0),self.tileset.tileDefinition[1].images[0])
 			pygame.display.flip()
-		debugMessage("Main loop off.")
+		debugMessage(3, "  Main loop off.")
 	
 	
 	def checkEvents(self):
@@ -329,7 +390,7 @@ class GAME:
 			elif event.type == KEYDOWN:
 				if event.key == K_ESCAPE:
 					self.run=0
-					debugMessage("Disabling main loop...")
+					debugMessage(3, " Disabling main loop...")
 				elif event.key == K_RETURN:
 					self.gamemap=GLOBALMAP(self,72,8,64,24)
 				elif event.key == K_KP1:
@@ -380,4 +441,4 @@ class GAME:
 if __name__ == '__main__':
 	game=GAME()
 	game.main()
-	debugMessage("Game ended") #, generated " +str(genedchunks) +" in total
+	debugMessage(5,"Game ended") #, generated " +str(genedchunks) +" in total

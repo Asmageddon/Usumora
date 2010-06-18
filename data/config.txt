@@ -1,0 +1,9 @@
+self.gameversion              = "0.1.11"
+self.settings.chunkCacheRange =    5
+self.settings.imageCacheRange =    3
+self.settings.renderRange     =  (0,2)
+self.settings.chunkSize       = (32,32)
+
+
+#Map generator settings:
+#self.generator.
