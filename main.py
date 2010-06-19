@@ -1,6 +1,7 @@
-import sys, os, pygame, random, perlin
+import sys, os, pygame, random, math
 from pygame.locals import *
 import gameconstants as gc
+import perlin
 
 if not pygame.font: print 'Warning, fonts disabled'
 if not pygame.mixer: print 'Warning, sound disabled'
@@ -48,14 +49,14 @@ class TILE:     #This class contains tile information, self.tileDefinition are s
 		self.images      = [Rect(0,0,32,32),Rect(0,0,32,32),Rect(0,0,32,32),Rect(0,0,32,32),Rect(0,0,32,32),Rect(0,0,32,32),Rect(0,0,32,32),Rect(0,0,32,32)] #Image for 4xnormal, cracked, damaged and broken tile
 		self.strength    = 9999 #How easy it is to break the tile from normal->cracked, cracked->damaged, damaged->broken and broken->destroyed
 		self.strengthdec = 0    #How much tile strength decreases with each level of destruction
-		self.lemitR      = 0    #Light emmision and color
-		self.lemitG      = 0
-		self.lemitB      = 0
+		self.lemit       = [0,0,0]
 		self.name        = "tile"
 		self.flammable   = 9999
+		self.magic       = 0
 		self.remains     = ""
 		self.transparency= 0
 		self.breaksInto  = 0
+		self.collision   = 0
 
 class GENERATOR:#This class holds instances of perlin.PerlinNoise used in generation and miscellanous map generation settings
 	def __init__(self,big,small,climate,lake):
@@ -166,18 +167,30 @@ class TILESET:
 				if   a == 1:
 					current+=cchar
 				elif a == 4:
-					if   current == "flammable":    self.tileDefinition[curTile].flammable    = int(current)
-					elif current == "strengthdec":  self.tileDefinition[curTile].strengthdec  = int(current)
-					elif current == "strength":     self.tileDefinition[curTile].strength     = int(current)
-					elif current == "lemitR":       self.tileDefinition[curTile].lemit[0]     = int(current)
-					elif current == "lemitG":       self.tileDefinition[curTile].lemit[1]     = int(current)
-					elif current == "lemitB":       self.tileDefinition[curTile].lemit[2]     = int(current)
-					elif current == "transparency": self.tileDefinition[curTile].transparency = int(current)
-					elif current == "magic":        self.tileDefinition[curTile].magic        = int(current)
-					elif current == "breaks":       self.tileDefinition[curTile].breaksInto   = int(current)
+					if   prop == "flammable":    self.tileDefinition[curTile].flammable    = int(current)
+					elif prop == "strengthdec":  self.tileDefinition[curTile].strengthdec  = int(current)
+					elif prop == "strength":     self.tileDefinition[curTile].strength     = int(current)
+					elif prop == "lemitR":       self.tileDefinition[curTile].lemit[0]     = int(current)
+					elif prop == "lemitG":       self.tileDefinition[curTile].lemit[1]     = int(current)
+					elif prop == "lemitB":       self.tileDefinition[curTile].lemit[2]     = int(current)
+					elif prop == "transparency": self.tileDefinition[curTile].transparency = int(current)
+					elif prop == "magic":        self.tileDefinition[curTile].magic        = int(current)
+					elif prop == "breaks":       self.tileDefinition[curTile].breaksInto   = int(current)
+					elif prop == "collision":    self.tileDefinition[curTile].collision    = int(current)
+					current=''
 					mode=1
 		FILE.close()
-		
+		for i in range(0,0):#self.tileDefinition:
+			print "flammable", i.flammable    
+			print "strengthdec", i.strengthdec  
+			print "strength", i.strength     
+			print "lemitR", i.lemit[0]     
+			print "lemitG", i.lemit[1]     
+			print "lemitB", i.lemit[2]     
+			print "transparency", i.transparency 
+			print "magic", i.magic        
+			print "breaks", i.breaksInto   
+			print "collision", i.collision    
 
 class LOCALMAP:
 	#genedchunks=0
@@ -237,7 +250,6 @@ class LOCALMAP:
 							tile=2
 				#Actual generation code end
 				self.mapChunk[x]+=[tile]
-				#print str(len(self.mapChunk)) + ":" + str(len(self.mapChunk[x]))
 				self.tileVariation[x]+=[tilevar]
 		debugMessage(4,"   Chunk generated("+str(positionX)+","+str(positionY)+")")
 	def __init__(self,generator,positionX,positionY):
@@ -259,13 +271,46 @@ class LOCALMAP:
 			debugMessage(4,"  Drawn a new chunk!")
 			#genedchunks+=1
 		return self.cachedimage
+	
+	def updateTile(self, tileset, position):
+		if self.cachedimage == "NULL":
+			self.requestChunkImage(tileset)
+		pos=(position[0]*32,position[1]*32)
+		clip=tileset.tileDefinition[self.mapChunk[position[0]][position[1]]].images[self.tileVariation[position[0]][position[1]]]
+		self.cachedimage.blit(tileset.tileset,pos,clip)
+	
 	def requestTile(self,position):
 		return self.mapChunk[position[0],position[1]]
-	def  damageTile(self, tileset, position, damage):
-		while damage > 0:
-			self.mapChunk[position[0],position[1]]
-	def  modifyTile(self,position,newtype):
-		self.mapChunk[position[0],position[1]]=newtype
+	
+	def damageTile(self, tileset, position, damage):
+		a=0
+		vari=self.tileVariation[position[0]][position[1]]
+		smashed=0
+		dmg=damage
+		tileDef=tileset.tileDefinition[self.mapChunk[position[0]][position[1]]]
+		while dmg > 0:
+			multiplier = (100.0-tileDef.strengthdec)/100.0
+			if vari>3: a=int(tileDef.strength*multiplier)
+			else: a=tileDef.strength
+			if dmg>=a and a!=0:
+				smashed+=1
+				dmg-=a
+			else:
+				dmg=-1
+		if vari<4:
+			self.tileVariation[position[0]][position[1]]=4+smashed
+		else:
+			self.tileVariation[position[0]][position[1]]+=smashed
+		if self.tileVariation[position[0]][position[1]]>7:
+			self.tileVariation[position[0]][position[1]]=random.randint(0,4)
+			self.modifyTile(tileset, position,tileDef.breaksInto)
+			return 32
+		else:
+			return smashed
+			self.updateTile(tileset, position)
+	def  modifyTile(self,tileset,position,newtype):
+		self.mapChunk[position[0]][position[1]]=newtype
+		self.updateTile(tileset, position)
 
 class GLOBALMAP:
 	def __init__(self,parent,big,small,climate,lake):
@@ -288,11 +333,12 @@ class GLOBALMAP:
 	def setTile(self, pos, newType):
 		x=pos[0]
 		y=pos[1]
-		self.requestChunk((x//32, y//32)).mapChunk[x-(x//32)*32][y-(y//32)*32]=newType
+		#self.requestChunk((x//32, y//32)).mapChunk[]=newType
+		self.requestChunk((x//32, y//32)).modifyTile(self.parent.tileset,(x-(x//32)*32,y-(y//32)*32),newType)
 	def damageTile(self, pos, damage):
 		x=pos[0]
 		y=pos[1]
-		return self.requestChunk((x//32, y//32)).damage((x-(x//32)*32,y-(y//32)*32),damage)
+		return self.requestChunk((x//32, y//32)).damageTile(self.parent.tileset,(x-(x//32)*32,y-(y//32)*32),damage)
 	def requestChunkDeletion(self, pos):
 		if self.chunkCollection.has_key(pos) and not self.chunkCollection[pos].modified:
 			del self.chunkCollection[pos]
@@ -361,10 +407,54 @@ class OBJECTSET:
 		debugMessage(5,"  Object set initialized.")
 
 class OBJECT:
-	def __init__(self):
+	def __init__(self,world):
 		self.position=[0,0]
 		self.type=0
+		self.world=world
+		self.terrainAttackMin=0
+		self.terrainAttackMax=0
 	def Move(self,vector,mode):
+		dmg=random.randint(self.terrainAttackMin,self.terrainAttackMax)
+		modes=[0,0,0,0,0,0,0,0]
+		for i in range(0,7):
+			if mode>math.pow(2,7-i):
+				modes[7-i]=1
+				mode-=math.pow(2,7-i)
+			else:
+				modes[7-i]=0
+		compos=((self.position[0]+vector[0]),(self.position[1]+vector[1]))
+		tileDef=self.world.tileset.tileDefinition[self.world.gamemap.getTile(compos)]
+		if(tileDef.collision==gc.C_NULL):
+			#if self.world.objectset[self.type].
+			if modes[gc.MOVE_CAREFULL_V]: return 0
+			else:
+				self.position=compos
+				return 1
+		elif(tileDef.collision==gc.C_FLOOR):
+			if not modes[gc.MOVE_FLOOR_V]:
+				if modes[gc.MOVE_AGGRO_V]:
+					self.world.gamemap.damageTile(compos,dmg)
+					return 0
+			else:
+				self.position=compos
+				return 1
+		elif(tileDef.collision==gc.C_LIQUID):
+			if not modes[gc.MOVE_LIQUID_V]:
+				if modes[gc.MOVE_AGGRO_V]:
+					self.world.gamemap.damageTile(compos,dmg)
+					return 0
+			else:
+				self.position=compos
+				return 1
+		elif(tileDef.collision==gc.C_WALL):
+			if not modes[gc.MOVE_WALL_V]:
+				if modes[gc.MOVE_AGGRO_V]:
+					self.world.gamemap.damageTile(compos,dmg)
+					return 0
+			else:
+				self.position=compos
+				return 1
+		#if dest
 		return 1
 
 class PLAYER:
@@ -375,8 +465,12 @@ class PLAYER:
 
 class GAME:
 	def __init__(self):
+		self.maxpfs=60
 		self.keymovX=0
 		self.keymovY=0
+		self.effmovX=0
+		self.effmovY=0
+		self.effcap=5
 		self.gameversion=""
 		self.run = 0
 		debugMessage(5,"Starting the game")
@@ -393,8 +487,9 @@ class GAME:
 		self.objects  = []
 		self.objectset.object   += [OBJECTDEF()]
 		self.objectset.object[0].image = Rect(120,42,32,32) 
-		self.objects+=[OBJECT()]
-		
+		self.objects+=[OBJECT(self)]
+		self.objects[0].terrainAttackMin=17
+		self.objects[0].terrainAttackMax=28
 		
 		self.settings = SETTINGS()
 		self.tileset  = TILESET()
@@ -411,12 +506,33 @@ class GAME:
 	def main(self):
 		debugMessage(5," Running main loop...")
 		while(self.run):
-			self.clock.tick(30)
-			self.objects[0].position[0]+=self.keymovX
-			self.objects[0].position[1]+=self.keymovY
+			self.clock.tick(self.maxfps)
+			if self.keymovX!=0: self.effmovX+=self.keymovX
+			else: self.effmovX=0
+			if self.keymovY!=0: self.effmovY+=self.keymovY
+			else: self.effmovY=0
+			if (self.effmovY > self.effcap or self.effmovY < -self.effcap) and self.effmovX==0:
+				if self.effmovY < 0: self.effmovY=-self.effcap
+				else: self.effmovY=self.effcap
+				mode=gc.MOVE_AGGRO    +   gc.MOVE_FLOOR    +   gc.MOVE_CAREFULL   +   gc.MOVE
+				self.objects[0].Move((0,(self.effmovY/self.effcap)),mode)
+				self.effmovY=0
+			if (self.effmovX > self.effcap or self.effmovX < -self.effcap) and self.effmovY==0:
+				if self.effmovX < 0: self.effmovX=-self.effcap
+				else: self.effmovX=self.effcap
+				mode=gc.MOVE_AGGRO    +   gc.MOVE_FLOOR    +   gc.MOVE_CAREFULL   +   gc.MOVE
+				self.objects[0].Move((self.effmovX/self.effcap,0),mode)
+				self.effmovX=0
+			if (self.effmovX > self.effcap or self.effmovX < -self.effcap) and (self.effmovY > self.effcap or self.effmovY < -self.effcap):
+				if self.effmovY < 0: self.effmovY=-self.effcap
+				else: self.effmovY=self.effcap
+				if self.effmovX < 0: self.effmovX=-self.effcap
+				else: self.effmovX=self.effcap
+				mode=gc.MOVE_AGGRO    +   gc.MOVE_FLOOR    +   gc.MOVE_CAREFULL   +   gc.MOVE
+				self.objects[0].Move((self.effmovX/self.effcap,self.effmovY/self.effcap),mode)
+				self.effmovX=0
+				self.effmovY=0
 			self.players[0].camPosition=(self.objects[0].position[0]-10,self.objects[0].position[1]-7)
-			#self.camPositionX+=self.camMovementX
-			#self.camPositionY+=self.keymovY
 			self.checkEvents()
 			self.gamemap.drawMap(self.screen,self.tileset,self.players[0],self.objects, self.objectset)
 			
@@ -446,7 +562,7 @@ class GAME:
 				elif event.key == K_KP4:
 					self.keymovX=-1
 				elif event.key == K_KP5:
-					print self.tileset.tileDefinition[self.gamemap.getTile(self.objects[0].position)].name
+					self.gamemap.setTile(self.objects[0].position,2)
 				elif event.key == K_KP6:
 					self.keymovX=1
 				elif event.key == K_KP7:

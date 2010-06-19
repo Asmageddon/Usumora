@@ -64,4 +64,3 @@ Move func mode param is sum of:
 16 - Carefull, blocked by NULL material and all with dmg > 0 AND dmgtype that object is not completly resistant to
 32 - Aggresive, attacks tile that it can not pass through
 64 - Unused yet
-128- Unused yet
