@@ -1,5 +1,6 @@
 import sys, os, pygame, random, perlin
 from pygame.locals import *
+import gameconstants as gc
 
 if not pygame.font: print 'Warning, fonts disabled'
 if not pygame.mixer: print 'Warning, sound disabled'
@@ -12,24 +13,27 @@ datapath="data"
 
 def load_image(name):
 	fullname = os.path.join(datapath, name)
+	debugMessage(5, '  Trying to load image file:'+fullname)
 	try:
 		image = pygame.image.load(fullname)
+		debugMessage(4, '   Image loaded succesfully!')
 	except pygame.error, message:
 		debugMessage(1, 'Cannot load image:' + fullname)
 		raise SystemExit, message
 	image = image.convert()
+	image.set_colorkey(pygame.Color(253,252,1))
 	return image
 
 def debugMessage(messageType,string):
 	a=""
-	if   messageType==0: a="\033[101m[FATAL ERROR]"
-	elif messageType==1: a="\033[100m\033[91m[ERROR]"
-	elif messageType==2: a="\033[91m[WARNING]"
-	elif messageType==3: a="\033[94m[NOTICE]" #Regular notice
-	elif messageType==4: a="\033[92m[NOTICE]" #Succes  notice
-	elif messageType==5: a="\033[95m[NOTICE]" #Special notice
+	if   messageType==0: a="\033[101m[FATAL ERROR]"  #Fatal error
+	elif messageType==1: a="\033[100m\033[91m[ERROR]"#Error
+	elif messageType==2: a="\033[91m[WARNING]"       #Warning
+	elif messageType==3: a="\033[94m[NOTICE]"        #Regular notice
+	elif messageType==4: a="\033[92m[NOTICE]"        #Succes  notice
+	elif messageType==5: a="\033[95m[NOTICE]"        #Special notice
 	print a+string+"\033[0m"
-	if   messageType==0: exit()
+	if   messageType<2: print "Exiting"; raise SystemExit
 
 class SETTINGS: #Holds settings, this have got single instance in main GAME class. 
 	def __init__(self):
@@ -51,6 +55,7 @@ class TILE:     #This class contains tile information, self.tileDefinition are s
 		self.flammable   = 9999
 		self.remains     = ""
 		self.transparency= 0
+		self.breaksInto  = 0
 
 class GENERATOR:#This class holds instances of perlin.PerlinNoise used in generation and miscellanous map generation settings
 	def __init__(self,big,small,climate,lake):
@@ -169,6 +174,7 @@ class TILESET:
 					elif current == "lemitB":       self.tileDefinition[curTile].lemit[2]     = int(current)
 					elif current == "transparency": self.tileDefinition[curTile].transparency = int(current)
 					elif current == "magic":        self.tileDefinition[curTile].magic        = int(current)
+					elif current == "breaks":       self.tileDefinition[curTile].breaksInto   = int(current)
 					mode=1
 		FILE.close()
 		
@@ -240,7 +246,6 @@ class LOCALMAP:
 		self.mapChunk=[[]]
 		self.tileVariation=[[]]
 		self.cachedimage="NULL"
-		self.mapChunk=[[]]
 		self.tileVariation=[[]]
 		self.generate(generator,positionX,positionY)
 	def requestChunkImage(self,tileset):
@@ -256,6 +261,9 @@ class LOCALMAP:
 		return self.cachedimage
 	def requestTile(self,position):
 		return self.mapChunk[position[0],position[1]]
+	def  damageTile(self, tileset, position, damage):
+		while damage > 0:
+			self.mapChunk[position[0],position[1]]
 	def  modifyTile(self,position,newtype):
 		self.mapChunk[position[0],position[1]]=newtype
 
@@ -268,11 +276,23 @@ class GLOBALMAP:
 		self.chunkCollection={}
 		self.generator=GENERATOR(big,small,climate,lake)
 		debugMessage(3," World map initialized")
-	def requestChunkImage(self, pos):
+	def requestChunk(self, pos):
 		if not self.chunkCollection.has_key(pos):
 			self.chunkCollection[pos]=LOCALMAP(self.generator,pos[0],pos[1])
 		return self.chunkCollection[pos]
 		#return LOCALMAP(self.generator,x,y)
+	def getTile(self, pos):
+		x=pos[0]
+		y=pos[1]
+		return self.requestChunk((x//32, y//32)).mapChunk[x-(x//32)*32][y-(y//32)*32]
+	def setTile(self, pos, newType):
+		x=pos[0]
+		y=pos[1]
+		self.requestChunk((x//32, y//32)).mapChunk[x-(x//32)*32][y-(y//32)*32]=newType
+	def damageTile(self, pos, damage):
+		x=pos[0]
+		y=pos[1]
+		return self.requestChunk((x//32, y//32)).damage((x-(x//32)*32,y-(y//32)*32),damage)
 	def requestChunkDeletion(self, pos):
 		if self.chunkCollection.has_key(pos) and not self.chunkCollection[pos].modified:
 			del self.chunkCollection[pos]
@@ -287,7 +307,7 @@ class GLOBALMAP:
 			return 1
 		else:
 			return 0
-	def drawMap(self, screen, tileset, player, objectset):
+	def drawMap(self, screen, tileset, player, objects, objectset):
 		positionX = player.camPosition[0]
 		positionY = player.camPosition[1]
                 screen.fill((0,0,0))
@@ -296,15 +316,16 @@ class GLOBALMAP:
                                 chunk_x = (positionX // 32) + x
                                 chunk_y = (positionY // 32) + y
                                 
-				chunk = self.requestChunkImage((chunk_x, chunk_y))
+				chunk = self.requestChunk((chunk_x, chunk_y))
                                 
                                 pos = (32 * (32 * chunk_x - positionX),
                                        32 * (32 * chunk_y - positionY))
-                                
+                
+				screen.blit(chunk.requestChunkImage(tileset), pos)
                                 if x == 0 and y == 0:
                                         self.uncacheChunks((chunk_x,chunk_y))
-                                        screen.blit(objectset.image,pos,objectset.object[0].image)
-				screen.blit(chunk.requestChunkImage(tileset), pos)
+		for i in objects:
+			screen.blit(objectset.image,(32*(i.position[0]-positionX),32*(i.position[1]-positionY)),objectset.object[i.type].image)
 	def uncacheChunks(self,position):
 		a = self.parent.settings.chunkCacheRange
 		b=0
@@ -341,8 +362,10 @@ class OBJECTSET:
 
 class OBJECT:
 	def __init__(self):
-		self.position=(0,0)
+		self.position=[0,0]
 		self.type=0
+	def Move(self,vector,mode):
+		return 1
 
 class PLAYER:
 	def __init__(self):
@@ -366,12 +389,12 @@ class GAME:
 		self.screen   = pygame.display.set_mode((640, 480))
 		
 		self.players=[PLAYER()]
-		self.objectset=OBJECTSET("player.png")
+		self.objectset=OBJECTSET("objects1.png")
 		self.objects  = []
 		self.objectset.object   += [OBJECTDEF()]
-		self.objectset.object[0].image = Rect(128,32,32,32) 
+		self.objectset.object[0].image = Rect(120,42,32,32) 
 		self.objects+=[OBJECT()]
-		#self.players[0].camPosition=(self.objects[0].position[0]-20,self.objects[0].position[1]-15)
+		
 		
 		self.settings = SETTINGS()
 		self.tileset  = TILESET()
@@ -389,12 +412,13 @@ class GAME:
 		debugMessage(5," Running main loop...")
 		while(self.run):
 			self.clock.tick(30)
-			self.players[0].camPosition[0]+=self.keymovX
-			self.players[0].camPosition[1]+=self.keymovY
+			self.objects[0].position[0]+=self.keymovX
+			self.objects[0].position[1]+=self.keymovY
+			self.players[0].camPosition=(self.objects[0].position[0]-10,self.objects[0].position[1]-7)
 			#self.camPositionX+=self.camMovementX
 			#self.camPositionY+=self.keymovY
 			self.checkEvents()
-			self.gamemap.drawMap(self.screen,self.tileset,self.players[0],self.objectset)
+			self.gamemap.drawMap(self.screen,self.tileset,self.players[0],self.objects, self.objectset)
 			
 			#self.screen.blit(self.tileset.tileset,(0,0),self.tileset.tileDefinition[1].images[0])
 			pygame.display.flip()
@@ -421,6 +445,8 @@ class GAME:
 					self.keymovX=1
 				elif event.key == K_KP4:
 					self.keymovX=-1
+				elif event.key == K_KP5:
+					print self.tileset.tileDefinition[self.gamemap.getTile(self.objects[0].position)].name
 				elif event.key == K_KP6:
 					self.keymovX=1
 				elif event.key == K_KP7:

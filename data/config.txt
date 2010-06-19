@@ -1,8 +1,8 @@
-self.gameversion              = "0.1.11"
-self.settings.chunkCacheRange =    5
-self.settings.imageCacheRange =    3
-self.settings.renderRange     =  (0,2)
-self.settings.chunkSize       = (32,32)
+self.gameversion              = "0.1.29"
+self.settings.chunkCacheRange =    5     #You can safely increase this, shouldn't consume much memory, can improve speed.
+self.settings.imageCacheRange =    3     #Should always be lower than chunkCacheRange, advised value is 3 as more uses more RAM for only slight improvement
+self.settings.renderRange     =  (0,2)   #Better leave this alone, it can only either slow down the game or break graphics.....
+#self.settings.chunkSize       = (32,32) #Unused yet, all chunks are 32x32 now.....
 
 
 #Map generator settings:

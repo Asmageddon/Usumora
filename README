@@ -1,0 +1,67 @@
+[--CREDITS--]
+PROGRAMMING:
+	Asmageddon
+
+PROGRAMMING AID&HELP:
+	Grumbel
+
+GRAPHICS:
+	/data/dngn.png   - stolen from DC Stone Soup
+	/data/player.png - stolen from DC Stone Soup, modified a bit
+
+DATA FILES:
+	/data/tileset    - Asmageddon
+	/data/objectset  - Asmageddon
+
+
+
+[--MODDING REFERENCE--]
+
+1) To create a mod you have to create a new directory containing dngn.png and objects1.png graphics, tileset and objectset text files containing game data definitions.
+
+2) Tileset editing:
+*To modify graphics just change dngn.png file
+*To edit tile definition edit tileset file, syntax is:
+
+#TILE NUMBER#  (Can be any number, order doesn't really matter)
+prop1=number value
+prop2=text value
+You can add any property, excessive ones will be saved into props dict, to invoke it's contets from within a script use tileDefinition[x].props["property name"]
+Properties used directly by engine are:
+
+collision   - defines collision mode:           , default=0
+  0-NULL,   empty space, through this you will fall, only used for material none
+  1-LIQUID, Swimming creatures/objects can swim in it, others will drown(or float...)
+  2-FLOOR,  Floor, objects can be placed there, floor can suffer damage from explosives, mining or even heavy objects standing/walking on it
+  3-WALL,   Wall, objects can't (usually) pass through it, can be destroyed
+strength    - how hard is it to break a tile from state normal->damaged, from damaged->h. damaged, h. damaged->broken and from broken to destroy the tile completly, default=9999
+strengthdec - how much strength required to break each next destruction level increases, percentage, default=0
+name        - name of the tile, default=""
+lemitR \
+lemitG  |=  - Light emmision values for Red, Green and Blue colors, from 0 to 255, default=0
+lemitB /
+flammable   - Fire damage power required to incinerate this tile
+transparency- how much it blocks light, from 0(opaque) to 16(100% transparent), default depends on collision mode(0 for NULL, LIQUID and FLOOR, 16 for WALL)
+magic       - Magic emmision. Used for magic minimap(value from 0 to 255), default=0
+remains     - Object that is left after complete destruction of the tile, default=""
+breaks      - what tile the tile breaks into, default=0
+dmg         - Damage it deals to objects, that (in case of wall) try to move to this tile, or (in case of liquid, floor) stand on this tile
+dmgtype     - Type of damage
+3) Objectset editing:
+To Be Implemented
+
+
+
+
+
+6) Programmer reference(for me only, as for now):
+Move func mode param is sum of:
+0  - Ignore all
+1  - Actually move, otherwise just simulate collisions and/or damage
+2  - Blocked by walls
+4  - Blocked by liquid
+8  - Blocked by floor
+16 - Carefull, blocked by NULL material and all with dmg > 0 AND dmgtype that object is not completly resistant to
+32 - Aggresive, attacks tile that it can not pass through
+64 - Unused yet
+128- Unused yet
