@@ -1,4 +1,6 @@
-import debug, perlin
+import debug, perlin, psyco
+
+psyco.full()
 
 class GENERATOR:#This class holds instances of perlin.PerlinNoise used in generation and miscellanous map generation settings
 	def __init__(self,big,small,climate,lake):
@@ -16,3 +18,4 @@ class GENERATOR:#This class holds instances of perlin.PerlinNoise used in genera
 		self.climate	   =perlin.PerlinNoise((climate,climate),perlin.ease_interpolation)
 		self.lakes		   =perlin.PerlinNoise((lake,lake),perlin.ease_interpolation)
 		debug.debugMessage(4,"   Generator initialized!")
+	def Type(self): return "GENERATOR"

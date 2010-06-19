@@ -1,4 +1,6 @@
-import debug, os, sys, utilities, pygame
+import debug, os, sys, utilities, pygame, psyco
+
+psyco.full()
 
 class TILE:     #This class contains tile information, self.tileDefinition are stored instead TILESET and define specific tile type properties
 	def __init__(self):
@@ -13,6 +15,7 @@ class TILE:     #This class contains tile information, self.tileDefinition are s
 		self.transparency= 0
 		self.breaksInto  = 0
 		self.collision   = 0
+	def Type(self): return "TILE"
 
 
 class TILESET:
@@ -21,6 +24,7 @@ class TILESET:
 		self.tileset=[]
 		self.tileDefinition=[]
 		debug.debugMessage(4," Tileset created!")
+	def Type(self): return "TILESET"
 	def fromFile(self,datapath,filename):
 		debug.debugMessage(3," Trying to load tileset from file: "+ os.path.join(datapath, filename))
 		if not os.path.exists(os.path.join(datapath, filename)): debug.debugMessage(0,"   Tileset file not located")

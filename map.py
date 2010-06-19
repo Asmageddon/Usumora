@@ -1,7 +1,10 @@
-import  random, debug, generator, pygame
+import  random, debug, generator, pygame, psyco
+
+psyco.full()
 
 class LOCALMAP:
 	#genedchunks=0
+	def Type(self): return "LOCALMAP"
 	def generate(self,generator,positionX,positionY):
 		debug.debugMessage(3,"  Generating chunk...")
 		rmatrix=[0,0,0,0]
@@ -130,6 +133,7 @@ class GLOBALMAP:
 		self.chunkCollection={}
 		self.generator=generator.GENERATOR(big,small,climate,lake)
 		debug.debugMessage(3," World map initialized")
+	def Type(self): return "GLOBALMAP"
 	def requestChunk(self, pos):
 		if not self.chunkCollection.has_key(pos):
 			self.chunkCollection[pos]=LOCALMAP(self.generator,pos[0],pos[1])

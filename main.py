@@ -1,7 +1,10 @@
-import sys, os, pygame, random, math
+import sys, os, pygame, psyco
 from pygame.locals import *
 import gameconstants as gc
-import perlin, map, debug, tileset, utilities
+import perlin, map, debug, tileset, utilities, objects
+
+psyco.profile()
+psyco.full()
 
 if not pygame.font: print 'Warning, fonts disabled'
 if not pygame.mixer: print 'Warning, sound disabled'
@@ -19,81 +22,17 @@ class SETTINGS: #Holds settings, this have got single instance in main GAME clas
 		self.imageCacheRange = 3
 		self.renderRange     = (0,2)
 		self.chunkSize       = (32,32)
-
- 
-
-class OBJECTDEF:
-	def __init__(self):
-		self.image=Rect(0,0,32,32)
-		self.owner=0
-		self.props=""
-
-class OBJECTSET:
-	def __init__(self,filename):
-		debug.debugMessage(5," Opening objects image file.")
-		#if not os.path.exists(os.path.join(datapath, filename)): debug.debugMessage(0,"   Object images file not located!")
-		self.image  = utilities.load_image(datapath,filename)
-		self.object = []
-		debug.debugMessage(5,"  Object set initialized.")
-
-class OBJECT:
-	def __init__(self,world):
-		self.position=[0,0]
-		self.type=0
-		self.world=world
-		self.terrainAttackMin=0
-		self.terrainAttackMax=0
-	def Move(self,vector,mode):
-		dmg=random.randint(self.terrainAttackMin,self.terrainAttackMax)
-		modes=[0,0,0,0,0,0,0,0]
-		for i in range(0,7):
-			if mode>math.pow(2,7-i):
-				modes[7-i]=1
-				mode-=math.pow(2,7-i)
-			else:
-				modes[7-i]=0
-		compos=((self.position[0]+vector[0]),(self.position[1]+vector[1]))
-		tileDef=self.world.tileset.tileDefinition[self.world.gamemap.getTile(compos)]
-		if(tileDef.collision==gc.C_NULL):
-			#if self.world.objectset[self.type].
-			if modes[gc.MOVE_CAREFULL_V]: return 0
-			else:
-				self.position=compos
-				return 1
-		elif(tileDef.collision==gc.C_FLOOR):
-			if not modes[gc.MOVE_FLOOR_V]:
-				if modes[gc.MOVE_AGGRO_V]:
-					self.world.gamemap.damageTile(compos,dmg)
-					return 0
-			else:
-				self.position=compos
-				return 1
-		elif(tileDef.collision==gc.C_LIQUID):
-			if not modes[gc.MOVE_LIQUID_V]:
-				if modes[gc.MOVE_AGGRO_V]:
-					self.world.gamemap.damageTile(compos,dmg)
-					return 0
-			else:
-				self.position=compos
-				return 1
-		elif(tileDef.collision==gc.C_WALL):
-			if not modes[gc.MOVE_WALL_V]:
-				if modes[gc.MOVE_AGGRO_V]:
-					self.world.gamemap.damageTile(compos,dmg)
-					return 0
-			else:
-				self.position=compos
-				return 1
-		#if dest
-		return 1
+	def Type(self): return "SETTINGS"
 
 class PLAYER:
 	def __init__(self):
 		self.camPosition  = [0,0]
 		#self.camMovement = (0,0)
 		self.color=(0,0,0)
+	def Type(self): return "PLAYER"
 
 class GAME:
+	def Type(self): return "GAME"
 	def __init__(self):
 		self.maxpfs=60
 		self.keymovX=0
@@ -113,11 +52,11 @@ class GAME:
 		self.screen   = pygame.display.set_mode((640, 480))
 		
 		self.players=[PLAYER()]
-		self.objectset=OBJECTSET("objects1.png")
+		self.objectset=objects.OBJECTSET(datapath,"objects1.png")
 		self.objects  = []
-		self.objectset.object   += [OBJECTDEF()]
+		self.objectset.object   += [objects.OBJECTDEF()]
 		self.objectset.object[0].image = Rect(120,42,32,32) 
-		self.objects+=[OBJECT(self)]
+		self.objects+=[objects.OBJECT(self)]
 		self.objects[0].terrainAttackMin=17
 		self.objects[0].terrainAttackMax=28
 		

@@ -1,3 +1,5 @@
+import psyco; psyco.full()
+
 #!/usr/bin/env python
 # $Id: perlin.py,v 1.11 2001/05/31 04:56:23 kevint Exp $
 #
