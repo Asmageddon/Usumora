@@ -27,8 +27,11 @@ class SETTINGS: #Holds settings, this have got single instance in main GAME clas
 class PLAYER:
 	def __init__(self):
 		self.camPosition  = [0,0]
-		#self.camMovement = (0,0)
-		self.color=(0,0,0)
+		self.camFocus     = 0
+		self.color        = (0,0,0)
+	def update(self):
+		if self.camFocus!=0:
+			self.camPosition=self.camFocus.position
 	def Type(self): return "PLAYER"
 
 class GAME:
@@ -40,6 +43,7 @@ class GAME:
 		self.effmovX=0
 		self.effmovY=0
 		self.effcap=5
+		self.fullscreen=0
 		self.gameversion=""
 		self.run = 0
 		debug.debugMessage(5,"Starting the game")
@@ -49,18 +53,15 @@ class GAME:
 		debug.debugMessage(3," Game started")
 		self.clock = pygame.time.Clock()
 		
-		self.screen   = pygame.display.set_mode((640, 480))
-		
-		self.players=[PLAYER()]
-		self.objectset=objects.OBJECTSET(datapath,"objects1.png")
-		self.objects  = []
-		self.objectset.object   += [objects.OBJECTDEF()]
-		self.objectset.object[0].image = Rect(120,42,32,32) 
-		self.objects+=[objects.OBJECT(self)]
-		self.objects[0].terrainAttackMin=17
-		self.objects[0].terrainAttackMax=28
-		
 		self.settings = SETTINGS()
+		if self.fullscreen: self.screen   = pygame.display.set_mode((640, 480),pygame.FULLSCREEN)
+		else: self.screen   = pygame.display.set_mode((640, 480),pygame.OPENGL)
+		
+		self.players  = [PLAYER()]
+		self.objectset= objects.OBJECTSET(datapath,"objectset")
+		self.objects  = []
+		self.objects += OBJECT(1)
+		self.players[0].camFocus=self.objects[0]
 		self.tileset  = tileset.TILESET()
 		self.gamemap  = map.GLOBALMAP(self,72,8,64,24)
 		self.tileset.fromFile(datapath,"tileset")
@@ -76,35 +77,12 @@ class GAME:
 		debug.debugMessage(5," Running main loop...")
 		while(self.run):
 			self.clock.tick(self.maxfps)
-			if self.keymovX!=0: self.effmovX+=self.keymovX
-			else: self.effmovX=0
-			if self.keymovY!=0: self.effmovY+=self.keymovY
-			else: self.effmovY=0
-			if (self.effmovY > self.effcap or self.effmovY < -self.effcap) and self.effmovX==0:
-				if self.effmovY < 0: self.effmovY=-self.effcap
-				else: self.effmovY=self.effcap
-				mode=gc.MOVE_AGGRO    +   gc.MOVE_FLOOR    +   gc.MOVE_CAREFULL   +   gc.MOVE
-				self.objects[0].Move((0,(self.effmovY/self.effcap)),mode)
-				self.effmovY=0
-			if (self.effmovX > self.effcap or self.effmovX < -self.effcap) and self.effmovY==0:
-				if self.effmovX < 0: self.effmovX=-self.effcap
-				else: self.effmovX=self.effcap
-				mode=gc.MOVE_AGGRO    +   gc.MOVE_FLOOR    +   gc.MOVE_CAREFULL   +   gc.MOVE
-				self.objects[0].Move((self.effmovX/self.effcap,0),mode)
-				self.effmovX=0
-			if (self.effmovX > self.effcap or self.effmovX < -self.effcap) and (self.effmovY > self.effcap or self.effmovY < -self.effcap):
-				if self.effmovY < 0: self.effmovY=-self.effcap
-				else: self.effmovY=self.effcap
-				if self.effmovX < 0: self.effmovX=-self.effcap
-				else: self.effmovX=self.effcap
-				mode=gc.MOVE_AGGRO    +   gc.MOVE_FLOOR    +   gc.MOVE_CAREFULL   +   gc.MOVE
-				self.objects[0].Move((self.effmovX/self.effcap,self.effmovY/self.effcap),mode)
-				self.effmovX=0
-				self.effmovY=0
+			self.crappyMovePlaceHolder()
 			self.players[0].camPosition=(self.objects[0].position[0]-10,self.objects[0].position[1]-7)
 			self.checkEvents()
+			for p in players: p.update()
 			self.gamemap.drawMap(self.screen,self.tileset,self.players[0],self.objects, self.objectset)
-			
+			self.crappyMovePlaceholder()
 			#self.screen.blit(self.tileset.tileset,(0,0),self.tileset.tileDefinition[1].images[0])
 			pygame.display.flip()
 		debug.debugMessage(3, "  Main loop off.")
@@ -167,6 +145,32 @@ class GAME:
 				continue
 			elif event.type is MOUSEBUTTONUP:
 				continue
+	def crappyMovePlaceholder(self):
+		if self.keymovX!=0: self.effmovX+=self.keymovX
+		else: self.effmovX=0
+		if self.keymovY!=0: self.effmovY+=self.keymovY
+		else: self.effmovY=0
+		if (self.effmovY > self.effcap or self.effmovY < -self.effcap) and self.effmovX==0:
+			if self.effmovY < 0: self.effmovY=-self.effcap
+			else: self.effmovY=self.effcap
+			mode=gc.MOVE_AGGRO    +   gc.MOVE_FLOOR    +   gc.MOVE_CAREFULL   +   gc.MOVE
+			self.objects[0].Move((0,(self.effmovY/self.effcap)),mode)
+			self.effmovY=0
+		if (self.effmovX > self.effcap or self.effmovX < -self.effcap) and self.effmovY==0:
+			if self.effmovX < 0: self.effmovX=-self.effcap
+			else: self.effmovX=self.effcap
+			mode=gc.MOVE_AGGRO    +   gc.MOVE_FLOOR    +   gc.MOVE_CAREFULL   +   gc.MOVE
+			self.objects[0].Move((self.effmovX/self.effcap,0),mode)
+			self.effmovX=0
+		if (self.effmovX > self.effcap or self.effmovX < -self.effcap) and (self.effmovY > self.effcap or self.effmovY < -self.effcap):
+			if self.effmovY < 0: self.effmovY=-self.effcap
+			else: self.effmovY=self.effcap
+			if self.effmovX < 0: self.effmovX=-self.effcap
+			else: self.effmovX=self.effcap
+			mode=gc.MOVE_AGGRO    +   gc.MOVE_FLOOR    +   gc.MOVE_CAREFULL   +   gc.MOVE
+			self.objects[0].Move((self.effmovX/self.effcap,self.effmovY/self.effcap),mode)
+			self.effmovX=0
+			self.effmovY=0
 if __name__ == '__main__':
 	game=GAME()
 	game.main()

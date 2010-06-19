@@ -9,6 +9,6 @@ def load_image(datapath,name):
 	except pygame.error, message:
 		debug.debugMessage(1, 'Cannot load image:' + fullname)
 		raise SystemExit, message
-	image = image.convert()
+	#image = image.convert()
 	image.set_colorkey(pygame.Color(253,252,1))
 	return image

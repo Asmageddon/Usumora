@@ -86,7 +86,7 @@ class TILESET:
 					if   prop      == "name":
 						self.tileDefinition[curTile].name=current
 					elif prop      == "remains":
-						tileset.remains=current
+						self.tileDefinition[curTile].remains=current
 					elif prop[0:5] == "image":
 						b=[]
 						curpr=""
