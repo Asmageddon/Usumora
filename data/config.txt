@@ -1,11 +1,11 @@
 self.fullscreen               =    0
 self.resolution               = (640,480)
-self.gameversion              = "pre-alpha 0.3.4"
+self.gameversion              = "pre-alpha 0.3.5"
 self.settings.chunkCacheRange =    5     #You can safely increase this, shouldn't consume much memory, can improve speed.
 self.settings.imageCacheRange =    3     #Should always be lower than chunkCacheRange, advised value is 3 as more uses more RAM for only slight improvement
 self.settings.renderRange     =  (0,2)   #Better leave this alone, it can only either slow down the game or break graphics.....
 #self.settings.chunkSize       = (32,32) #Unused yet, all chunks are 32x32 now.....
-self.effcap                   =    1     #Decrease if your character moves too slowly
 self.maxfps                   =    60
+self.allplayersinput          =    0     #Really, if you do not know what you are doing - do not touch this!
 #Map generator settings:
 #self.generator.

@@ -64,3 +64,58 @@ Move func mode param is sum of:
 16 - Carefull, blocked by NULL material and all with dmg > 0 AND dmgtype that object is not completly resistant to
 32 - Aggresive, attacks tile that it can not pass through
 64 - Unused yet
+
+
+[--KEYMAP REFERENCE--]
+keys:
+257-265 - NUMPAD numbers
+13      - ENTER
+27      - ESC
+modifiers:
+0       - this is default, no modifier, numpad is counted as no modifier as well
+1       - left  shift
+2       - right shift
+64      - left  ctrl
+128     - right ctrl
+256     - left  alt
+16384   - right alt
+4096    - numpad, when number contains it it is automatically removed, so whetever numpad is pressed or not does not matter.
+NOTE: modifier number is sum of all pressed keys.... 
+NOTE: in configame.txt of your mod you can set monomodkeys to 1 to make both left and right modifier keys count as same modifier(usually left one)
+NOTE: p keys can also be p1,p2,p3,p4,p5,etc. - these go only to specific player
+NOTE: p keys can also be P1,P2,P3,P4,P5,etc. - then they go to specified player ALWAYS, even, when he is not active....
+NOTE: object.move actions are different from player.move actions in the fact, that they are issued directly to object, with "aggro" and without "carefull" options....
+
+p - player keys, depends on mode - if user is in a menu these go to GUI, else to object, which focus is on:
+player.move.ld
+player.move.d
+player.move.rd
+player.move.l
+player.wait
+player.move.r
+player.move.ul
+player.move.u
+player.move.ur
+o - object keys, these go to object, which focus is on, object.act.ACTIONNAME issues the object a script action command:
+object.act.ACTIONNAME
+object.move.ld
+object.move.d
+object.move.rd
+object.move.l
+object.wait
+object.move.r
+object.move.ul
+object.move.u
+object.move.ur
+i - interface keys, these always go to GUI:
+gui.confirm
+gui.cancel
+g - game keys, these get checked by game:
+game.exit
+game.reload.tileset
+game.reload.objectset
+game.reload.all
+game.debugame.on
+game.debugame.off
+w - world keys, these are just like game keys, but are used to modify world:
+world.regen

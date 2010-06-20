@@ -1,0 +1,25 @@
+#Player(GUI/OBJ, depending on situation) keys
+257,0=player.move.ld
+258,0=player.move.d
+259,0=player.move.rd
+260,0=player.move.l
+261,0=player.wait
+262,0=player.move.r
+263,0=player.move.ul
+264,0=player.move.u
+265,0=player.move.ur
+#Object keys for aggro and uncareful movement:
+257,1=object.move.ld
+258,1=object.move.d
+259,1=object.move.rd
+260,1=object.move.l
+261,1=object.wait
+262,1=object.move.r
+263,1=object.move.ul
+264,1=object.move.u
+265,1=object.move.ur
+#Interface(GUI) keys:
+27,1=game.exit
+13,1=world.regen
+13,0=gui.confirm
+27,0=gui.cancel
