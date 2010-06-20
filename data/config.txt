@@ -1,5 +1,6 @@
 self.fullscreen               =    0
-self.gameversion              = "pre-alpha 0.3.3"
+self.resolution               = (640,480)
+self.gameversion              = "pre-alpha 0.3.4"
 self.settings.chunkCacheRange =    5     #You can safely increase this, shouldn't consume much memory, can improve speed.
 self.settings.imageCacheRange =    3     #Should always be lower than chunkCacheRange, advised value is 3 as more uses more RAM for only slight improvement
 self.settings.renderRange     =  (0,2)   #Better leave this alone, it can only either slow down the game or break graphics.....

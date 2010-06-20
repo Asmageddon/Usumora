@@ -9,11 +9,10 @@ psyco.full()
 if not pygame.font: print 'Warning, fonts disabled'
 if not pygame.mixer: print 'Warning, sound disabled'
 
-if(len(sys.argv)>2):
+if(len(sys.argv)>1):
 	if sys.argv[0] == "-d": datapath=sys.argv[1]
 else:	
 	datapath="data"
-datapath="data"
 
 class SETTINGS: #Holds settings, this have got single instance in main GAME class. 
 	def __init__(self):
@@ -28,10 +27,11 @@ class PLAYER:
 	def __init__(self):
 		self.camPosition  = [0,0]
 		self.camFocus     = 0
+		self.screenSize   = (0,0)
 		self.color        = (0,0,0)
 	def update(self):
 		if self.camFocus!=0:
-			self.camPosition=self.camFocus.position
+			self.camPosition= (self.camFocus.position[0]-self.screenSize[0]/64,self.camFocus.position[1]-self.screenSize[1]/64)
 	def Type(self): return "PLAYER"
 
 class GAME:
@@ -54,10 +54,16 @@ class GAME:
 		self.clock = pygame.time.Clock()
 		
 		self.settings = SETTINGS()
-		if self.fullscreen: self.screen   = pygame.display.set_mode((640, 480),pygame.FULLSCREEN)
-		else: self.screen   = pygame.display.set_mode((640, 480))
+		f=open(os.path.join(datapath, "config.txt"))
+		ff=f.read()
+		f.close()
+		try: exec(ff)
+		except: debug.debugMessage(1,"Something is wrong with config file!")
+		if self.fullscreen==1: self.screen   = pygame.display.set_mode(self.resolution,pygame.FULLSCREEN)
+		else: self.screen   = pygame.display.set_mode(self.resolution)
 		
 		self.players  = [PLAYER()]
+		self.players[0].screenSize=(640,480)
 		self.objectset= objects.OBJECTSET(datapath,"objectset")
 		self.objects  = []
 		self.objects += [objects.OBJECT(self,1)]
@@ -66,11 +72,7 @@ class GAME:
 		self.gamemap  = map.GLOBALMAP(self,72,8,64,24)
 		self.tileset.fromFile(datapath,"tileset")
 		
-		f=open(os.path.join(datapath, "config.txt"))
-		ff=f.read()
-		f.close()
-		try: exec(ff)
-		except: debug.debugMessage(1,"Something is wrong with config file!")
+		
 		pygame.display.set_caption("Usumora["+self.gameversion+"]")
 		
 	def main(self):
@@ -78,7 +80,7 @@ class GAME:
 		while(self.run):
 			self.clock.tick(self.maxfps)
 			self.crappyMovePlaceHolder()
-			self.players[0].camPosition=(self.objects[0].position[0]-10,self.objects[0].position[1]-7)
+			self.players[0].camPosition=(self.objects[0].position[0],self.objects[0].position[1])
 			self.checkEvents()
 			for p in self.players: p.update()
 			self.gamemap.drawMap(self.screen,self.tileset,self.players[0],self.objects, self.objectset)

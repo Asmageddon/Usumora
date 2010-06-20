@@ -145,7 +145,7 @@ class OBJECTSET:
 							else:
 								curpr+=current[o]
 						self.objectDefinition[curObject].image=pygame.Rect( b[0], b[1], b[2], b[3])
-					print prop,"=",current
+					#print prop,"=",current
 					current=''
 					mode=1
 			elif mode == 3: #This reads integer(s) value for the property and assigns it
@@ -162,7 +162,7 @@ class OBJECTSET:
 						#print prop[6:,current
 						#print "ABRAKADABRA!"
 						self.objectDefinition[curObject].props.scripts[prop[6:len(prop)]]            = current
-						print self.objectDefinition[curObject].props.scripts
+						#print self.objectDefinition[curObject].props.scripts
 					#if prop[0:6] == "script": print prop[6:len(prop)],"=",current
 					#else: print prop,"=",current
 					current=''
