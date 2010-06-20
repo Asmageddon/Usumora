@@ -1,4 +1,4 @@
-import debug, utilities, pygame, sys, os, psyco
+import debug, utilities, pygame, sys, os, psyco, random,math
 import gameconstants as gc
 
 psyco.full()
@@ -23,8 +23,9 @@ class OBJECTDEF:
 class OBJECTSET:
 	def __init__(self,datapath,filename):
 		self.objectDefinition = []
-		self.graphics         = 0
+		#self.graphics         = ""
 		self.scripts          = {}
+		
 		#self.scripts['move']  = "def execute(self): return 1"
 		#exec(objectset.scripts[object[i].props.scripts['move']]+chr(10)+execute(props))
 		debug.debugMessage(5,"  Loading object data from file...")
@@ -33,7 +34,7 @@ class OBJECTSET:
 	
 	def imageFromFile(self,datapath,filename):
 		debug.debugMessage(5," Opening objects image file.")
-		self.image  = utilities.load_image(datapath,filename)
+		self.graphics  = utilities.load_image(datapath,filename)
 
 	def loadScripts(self,datapath,filename):
 		if not os.path.exists(os.path.join(datapath, filename)): debug.debugMessage(0,"   Object script list file not located!")
@@ -88,7 +89,7 @@ class OBJECTSET:
 			else:                    a=0
 			if   mode == -2:
 				if a==4:
-					self.objectset=utilities.load_image(datapath,current)
+					self.graphics=utilities.load_image(datapath,current)
 					mode=-1
 					current=''
 				else: current+=cchar
@@ -148,7 +149,7 @@ class OBJECTSET:
 					current=''
 					mode=1
 			elif mode == 3: #This reads integer(s) value for the property and assigns it
-				if   a == 1:
+				if   a == 1 or a == 2:
 					current+=cchar
 				elif a == 4:
 					if   prop == "weight":       self.objectDefinition[curObject].props.weight       = int(current)
@@ -157,21 +158,28 @@ class OBJECTSET:
 					elif prop == "terrainattackmax":self.objectDefinition[curObject].props.terrainAttack[1] = int(current)
 					elif prop == "hp":           self.objectDefinition[curObject].props.hp           = int(current)
 					elif prop == "magicemit":   self.objectDefinition[curObject].props.magic_emit    = int(current)
-					elif prop[0:7] == "script_":
-						self.objectDefinition[curObject].props.scripts[prop[7:len(prop)]]            = int(current)
-					print prop,"=",current
+					elif prop[0:6] == "script":
+						#print prop[6:,current
+						#print "ABRAKADABRA!"
+						self.objectDefinition[curObject].props.scripts[prop[6:len(prop)]]            = current
+						print self.objectDefinition[curObject].props.scripts
+					#if prop[0:6] == "script": print prop[6:len(prop)],"=",current
+					#else: print prop,"=",current
 					current=''
 					mode=1
 	def Type(self): return "OBJECTSET"
 
 class OBJECT:
-	def __init__(self,world):
+	def __init__(self,world,otype):
 		self.position=[0,0]
-		self.type=0
+		self.type=otype
 		self.world=world
 	
-	def execAction(self,objectset,action,props):
-		exec(objectset.scripts[objectset.objectDefinition[self.type].props.scripts[action]]+chr(10)+"execute("+str(props)+")")
+	def execAction(self,action,props):
+		if not self.world.objectset.objectDefinition[self.type].props.scripts.has_key(action): debug.debugMessage(2,"Object does not have script for action: '"+action+"'")
+		else:
+			a= "props="+str(props)+chr(10)+self.world.objectset.scripts[self.world.objectset.objectDefinition[self.type].props.scripts[action]]
+			exec(a)
 
 	def getProp(self,propname):
 		if propname in ["pos","position"]:

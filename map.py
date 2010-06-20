@@ -184,7 +184,7 @@ class GLOBALMAP:
                                 if x == 0 and y == 0:
                                         self.uncacheChunks((chunk_x,chunk_y))
 		for i in objects:
-			screen.blit(objectset.image,(32*(i.position[0]-positionX),32*(i.position[1]-positionY)),objectset.object[i.type].image)
+			screen.blit(objectset.graphics,(32*(i.position[0]-positionX),32*(i.position[1]-positionY)),objectset.objectDefinition[i.type].image)
 	def uncacheChunks(self,position):
 		a = self.parent.settings.chunkCacheRange
 		b=0

@@ -55,12 +55,12 @@ class GAME:
 		
 		self.settings = SETTINGS()
 		if self.fullscreen: self.screen   = pygame.display.set_mode((640, 480),pygame.FULLSCREEN)
-		else: self.screen   = pygame.display.set_mode((640, 480),pygame.OPENGL)
+		else: self.screen   = pygame.display.set_mode((640, 480))
 		
 		self.players  = [PLAYER()]
 		self.objectset= objects.OBJECTSET(datapath,"objectset")
 		self.objects  = []
-		self.objects += OBJECT(1)
+		self.objects += [objects.OBJECT(self,1)]
 		self.players[0].camFocus=self.objects[0]
 		self.tileset  = tileset.TILESET()
 		self.gamemap  = map.GLOBALMAP(self,72,8,64,24)
@@ -80,9 +80,9 @@ class GAME:
 			self.crappyMovePlaceHolder()
 			self.players[0].camPosition=(self.objects[0].position[0]-10,self.objects[0].position[1]-7)
 			self.checkEvents()
-			for p in players: p.update()
+			for p in self.players: p.update()
 			self.gamemap.drawMap(self.screen,self.tileset,self.players[0],self.objects, self.objectset)
-			self.crappyMovePlaceholder()
+			self.crappyMovePlaceHolder()
 			#self.screen.blit(self.tileset.tileset,(0,0),self.tileset.tileDefinition[1].images[0])
 			pygame.display.flip()
 		debug.debugMessage(3, "  Main loop off.")
@@ -145,7 +145,7 @@ class GAME:
 				continue
 			elif event.type is MOUSEBUTTONUP:
 				continue
-	def crappyMovePlaceholder(self):
+	def crappyMovePlaceHolder(self):
 		if self.keymovX!=0: self.effmovX+=self.keymovX
 		else: self.effmovX=0
 		if self.keymovY!=0: self.effmovY+=self.keymovY
@@ -154,13 +154,13 @@ class GAME:
 			if self.effmovY < 0: self.effmovY=-self.effcap
 			else: self.effmovY=self.effcap
 			mode=gc.MOVE_AGGRO    +   gc.MOVE_FLOOR    +   gc.MOVE_CAREFULL   +   gc.MOVE
-			self.objects[0].Move((0,(self.effmovY/self.effcap)),mode)
+			self.objects[0].execAction("move",{'vector':(0,(self.effmovY/self.effcap)),'mode':mode})
 			self.effmovY=0
 		if (self.effmovX > self.effcap or self.effmovX < -self.effcap) and self.effmovY==0:
 			if self.effmovX < 0: self.effmovX=-self.effcap
 			else: self.effmovX=self.effcap
 			mode=gc.MOVE_AGGRO    +   gc.MOVE_FLOOR    +   gc.MOVE_CAREFULL   +   gc.MOVE
-			self.objects[0].Move((self.effmovX/self.effcap,0),mode)
+			self.objects[0].execAction("move",{'vector':(self.effmovX/self.effcap,0),'mode':mode})
 			self.effmovX=0
 		if (self.effmovX > self.effcap or self.effmovX < -self.effcap) and (self.effmovY > self.effcap or self.effmovY < -self.effcap):
 			if self.effmovY < 0: self.effmovY=-self.effcap
@@ -168,7 +168,7 @@ class GAME:
 			if self.effmovX < 0: self.effmovX=-self.effcap
 			else: self.effmovX=self.effcap
 			mode=gc.MOVE_AGGRO    +   gc.MOVE_FLOOR    +   gc.MOVE_CAREFULL   +   gc.MOVE
-			self.objects[0].Move((self.effmovX/self.effcap,self.effmovY/self.effcap),mode)
+			self.objects[0].execAction("move", {'vector':(self.effmovX/self.effcap,self.effmovY/self.effcap),'mode':mode} )
 			self.effmovX=0
 			self.effmovY=0
 if __name__ == '__main__':
