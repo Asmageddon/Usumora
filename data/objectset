@@ -1,0 +1,15 @@
+objects1.png
+script-objects
+#0#
+name=null_obj
+#1#
+name=test hero
+script_move=move
+weight=50
+speed=100
+image=120,42,32,32;
+terrain_attack_min=17
+terrain_attack_max=28
+hp=50
+resistance_fire=80%
+magic_emit=100
