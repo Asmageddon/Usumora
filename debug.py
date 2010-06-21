@@ -1,4 +1,5 @@
 def debugMessage(messageType,string):
+	#return 0
 	a=""
 	if   messageType==0: a="\033[101m[FATAL ERROR]"  #Fatal error
 	elif messageType==1: a="\033[100m\033[91m[ERROR]"#Error

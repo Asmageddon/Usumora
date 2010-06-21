@@ -79,7 +79,7 @@ class LOCALMAP:
 					pos=(x*32,y*32)
 					clip=tileset.tileDefinition[self.mapChunk[x][y]].images[self.tileVariation[x][y]]
 					self.cachedimage.blit(tileset.tileset,pos,clip)
-			debug.debugMessage(4,"  Drawn a new chunk!")
+			debug.debugMessage(3,"  Drawn a new chunk!")
 			#genedchunks+=1
 		return self.cachedimage
 	

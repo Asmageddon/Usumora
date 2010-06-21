@@ -13,13 +13,13 @@
 258,1=object.move.d
 259,1=object.move.rd
 260,1=object.move.l
-261,1=object.wait
+261,1,0=object.act.teleport.no
 262,1=object.move.r
 263,1=object.move.ul
 264,1=object.move.u
 265,1=object.move.ur
 #Interface(GUI) keys:
 27,1=game.exit
-13,1=world.regen
+13,1,0=world.regen
 13,0=gui.confirm
 27,0=gui.cancel

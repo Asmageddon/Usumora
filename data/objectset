@@ -5,6 +5,9 @@ name=null_obj
 #1#
 name=test hero
 script_move=move
+script_teleport=teleport
+move_mode=25
+move_mode2=57
 weight=50
 speed=100
 image=120,42,32,32;

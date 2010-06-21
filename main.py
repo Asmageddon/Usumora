@@ -13,6 +13,7 @@ if(len(sys.argv)>1):
 	if sys.argv[0] == "-d": datapath=sys.argv[1]
 else:	
 	datapath="data"
+enableDebug=1
 
 class SETTINGS: #Holds settings, this have got single instance in main GAME class. 
 	def __init__(self):
@@ -33,13 +34,23 @@ class PLAYER:
 	def update(self):
 		if self.camFocus!=0:
 			self.camPosition= (self.camFocus.position[0]-self.screenSize[0]/64,self.camFocus.position[1]-self.screenSize[1]/64)
-	def getInput(self,e):
+	def getInput(self,action):
+		if action[0]=='player':
+			if action[1]=='move':
+				self.camFocus.execAction('move',{'vector':action[2],'mode':self.camFocus.getProp("moveMode")})
+		elif action[0]=='object':
+			if action[1]=='move':
+				self.camFocus.execAction('move',{'vector':action[2],'mode':self.camFocus.getProp("moveMode2")})
+			elif action[1]=='act':
+				if len(action)>2: self.camFocus.execAction(action[2],{'prop':action[3]})
+				else: self.camFocus.execAction(action[1],{})
 		return 0
 	def Type(self): return "PLAYER"
 
 class GAME:
 	def Type(self): return "GAME"
 	def __init__(self):
+		self.mapregen=0
 		self.maxpfs=60
 		self.fullscreen=0
 		self.gameversion=""
@@ -81,6 +92,7 @@ class GAME:
 			self.clock.tick(self.maxfps)
 			self.players[0].camPosition=(self.objects[0].position[0],self.objects[0].position[1])
 			self.checkEvents()
+			#if self.mapregen==1: self.mapregen=0; self.gamemap=map.GLOBALMAP(self,72,32,48,16)
 			self.keyinput.keyInputRepeat(self)
 			for p in self.players: p.update()
 			self.gamemap.drawMap(self.screen,self.tileset,self.players[0],self.objects, self.objectset)
@@ -103,9 +115,16 @@ class GAME:
 			elif event.type == MOUSEBUTTONUP:
 				continue
 	def receiveInput(self,action):
-		print "Received following input: "+str(action)
-		if (action==['game','exit']): self.run=0
-		if (action==['player','move','l']): print "hai!";self.players[0].camFocus.execAction('move',{'vector':(-1,0),'mode':(gc.MOVE_AGGRO+gc.MOVE_FLOOR)})
+		#print "Received following input: "+str(action)
+		if   (action[0] == 'game'):
+			if   action[1]=='exit':  self.run=0
+		elif (action[0] == 'world'):
+			if   action[1]=='regen': self.gamemap=map.GLOBALMAP(self,72,32,48,16)
+			#elif action[2]=='debug':
+			#	if action[3]=='on': debug = 1
+			#	else: debug = 0
+		elif (action[0] == 'player'): self.players[0].getInput(action)
+		elif (action[0] == 'object'): self.players[0].getInput(action)
 if __name__ == '__main__':
 	game=GAME()
 	game.main()

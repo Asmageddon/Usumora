@@ -86,6 +86,11 @@ NOTE: p keys can also be p1,p2,p3,p4,p5,etc. - these go only to specific player
 NOTE: p keys can also be P1,P2,P3,P4,P5,etc. - then they go to specified player ALWAYS, even, when he is not active....
 NOTE: object.move actions are different from player.move actions in the fact, that they are issued directly to object, with "aggro" and without "carefull" options....
 
+NOTE: Control system is currently under development, so only few of control commands are implemented....
+
+Usual keymap looks like: key,mod=type,action,prop
+However you can specify an action to be no-repeat, so it only gets executed once when key gets pressed.
+
 p - player keys, depends on mode - if user is in a menu these go to GUI, else to object, which focus is on:
 player.move.ld
 player.move.d
@@ -97,7 +102,7 @@ player.move.ul
 player.move.u
 player.move.ur
 o - object keys, these go to object, which focus is on, object.act.ACTIONNAME issues the object a script action command:
-object.act.ACTIONNAME
+object.act.ACTIONNAME.property.subprop
 object.move.ld
 object.move.d
 object.move.rd
@@ -115,7 +120,20 @@ game.exit
 game.reload.tileset
 game.reload.objectset
 game.reload.all
-game.debugame.on
-game.debugame.off
+game.debug.on
+game.debug.off
+game.debug.toggle
 w - world keys, these are just like game keys, but are used to modify world:
 world.regen
+
+NOTE: The object.act is the only command with 4/5 sections - act makes object, which active player(s) focus is on do ACTIONNAME with property passed to props dict.
+	property aside of anything else can be:
+	TARGET - makes player have to first target something if nothing is targeted, otherwise passes current target
+	FORCETARGET - makes player have to target something, even if he is already targeting something
+	subproperties of TARGET and FORCETARGET can be:
+		TERRAIN - player have got to target terrain
+		OBJECT - player have to target an object
+		ITEM - player have got to target a item
+		MONSTER - player have to target a monster
+		ITEMGROUND - item on ground
+		ITEMCONTENTS - contents of active object(ie. inventory)

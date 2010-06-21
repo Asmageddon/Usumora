@@ -9,10 +9,13 @@ class OBJECTPROPS:
 		self.movemode      = 0
 		self.weight        = 0
 		self.speed         = 0
-		self.hp            = 0
+		self.maxhp         = 0
 		self.magic_emit    = 0
 		self.scripts       = {}
+		self.sprops        = {}
 		self.terrainAttack = [0,0]
+		self.moveMode      = 0
+		self.moveMode2     = 0
 
 class OBJECTDEF:
 	def __init__(self):
@@ -152,19 +155,18 @@ class OBJECTSET:
 				if   a == 1 or a == 2:
 					current+=cchar
 				elif a == 4:
-					if   prop == "weight":       self.objectDefinition[curObject].props.weight       = int(current)
-					elif prop == "speed":        self.objectDefinition[curObject].props.speed        = int(current)
-					elif prop == "terrainattackmin":self.objectDefinition[curObject].props.terrainAttack[0] = int(current)
-					elif prop == "terrainattackmax":self.objectDefinition[curObject].props.terrainAttack[1] = int(current)
-					elif prop == "hp":           self.objectDefinition[curObject].props.hp           = int(current)
-					elif prop == "magicemit":   self.objectDefinition[curObject].props.magic_emit    = int(current)
+					if   prop == "weight":           self.objectDefinition[curObject].props.weight           = int(current)
+					elif prop == "speed":            self.objectDefinition[curObject].props.speed            = int(current)
+					elif prop == "terrainattackmin": self.objectDefinition[curObject].props.terrainAttack[0] = int(current)
+					elif prop == "terrainattackmax": self.objectDefinition[curObject].props.terrainAttack[1] = int(current)
+					elif prop == "maxhp":            self.objectDefinition[curObject].props.maxhp            = int(current)
+					elif prop == "magicemit":        self.objectDefinition[curObject].props.magic_emit       = int(current)
+					elif prop == "movemode":         self.objectDefinition[curObject].props.moveMode         = int(current)
+					elif prop == "movemode2":        self.objectDefinition[curObject].props.moveMode2        = int(current)
+					elif prop[0:5] == "sprop":
+						self.objectDefinition[curObject].props.sprops[prop[5:len(prop)]]             = int(current)
 					elif prop[0:6] == "script":
-						#print prop[6:,current
-						#print "ABRAKADABRA!"
 						self.objectDefinition[curObject].props.scripts[prop[6:len(prop)]]            = current
-						#print self.objectDefinition[curObject].props.scripts
-					#if prop[0:6] == "script": print prop[6:len(prop)],"=",current
-					#else: print prop,"=",current
 					current=''
 					mode=1
 	def Type(self): return "OBJECTSET"
@@ -190,8 +192,14 @@ class OBJECT:
 			return self.position[1]
 		elif propname == "type":
 			return self.type
-		elif propname in [""]:
-			return self.position[0]
+		elif propname == "moveMode":
+			return self.world.objectset.objectDefinition[self.type].props.moveMode
+		elif propname == "moveMode2":
+			return self.world.objectset.objectDefinition[self.type].props.moveMode2
+		elif propname in ["speed"]:
+			return self.world.objectset.objectDefinition[self.type].props.speed
+		elif propname[0:2] == ["s."]:
+			return self.world.objectset.objectDefinition[self.type].props.sprop[propname[2:len(propname)]]
 
 	def Type(self): return "OBJECT"
 	
