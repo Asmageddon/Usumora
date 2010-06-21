@@ -1,0 +1,60 @@
+Already done things will get written down when I have time and will to look onto github about what and when was added
+
+[0.3.x]
++Add object content support
++Map more of control system commands onto engine functions, add more of these
+
+[0.4.x]
++Add GUI
+  +Frontend and menus
+  +Using GUI for object action targeting
+  +Create object and tile definition editors
++Add generic, called by engine object scripts like tick and send and receive data for interaction between objects
++Backport external script support from objects to map module
+  +Add tile ticking
+  +Do misc things that are out of my head right now
+-Bugfixes
+
+[0.5.x]
+*Allow for not 32x32 chunks
+*Allow for not 32x32 tiles
++Add different, more advanced tile rendering modes
+*Extend and optimise level generator
+  +Use smaller amount(and scaled) perlin noise
+  +Add more realistic caves generator(will also be used for rivers, etc.)
+  +Add support for premade chunks
+    +Add an editor for that
+  +Add support for limited size maps
+  +Add support for external images, which affect 'heightmap' used to generate current map layout
++Partition objects to make rendering and collision detection 
++Add multi-level worlds
+-Bugfixes
+
+[0.6.x]
++Add scenario support
+  +Add global scripts to allow things like quests, counter that counts time left, or control turn based multiplayer
+  +Add support for starting a mod via main menu and choosing a scenario, it's params (difficulty, etc.)
+  +Add editor for scenarios, including:
+    -Determining level generator types and parameters
+    -Selecting and tuning params of global scripts
+    -Starting objects, player(s), and their params
+    -Choosing images determining game world shape(islands, caves, etc.)
+    -More misc things
++Get engine to state allowing developing a full featured roguelike
++Make some quite simple, but cool roguelike or two
++In the end, add game state saving...
+  +Level saving
+  +Object state saving
+  +Add support for doing it via GUI/input system
+
+[1.x.x]
+*Convert whole game to C++
++Add OpenGL support
+
+[Distant future]
++Add floating point movement(non-tile-based)
++Add mouse input to allow creating top down shooters and platformers
++Add box2D support
+  +Add support for non-tile based chunks, with image loaded from file
+  +Bake chunk collision data, either from tilemap or chunk image
++Make some cool top-down survival shooter with base building and item crafting
