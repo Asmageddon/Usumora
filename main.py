@@ -26,7 +26,8 @@ class SETTINGS: #Holds settings, this have got single instance in main GAME clas
 	def Type(self): return "SETTINGS"
 
 class PLAYER:
-	def __init__(self):
+	def __init__(self,world):
+		self.world=world
 		self.camPosition  = [0,0]
 		self.camFocus     = 0
 		self.screenSize   = (0,0)
@@ -73,7 +74,7 @@ class GAME:
 		
 		self.keyinput   = keyinput.KEYMAP()
 		self.keyinput.fromFile(datapath,"keymap")
-		self.players  = [PLAYER()]
+		self.players  = [PLAYER(self)]
 		self.players[0].screenSize=(640,480)
 		self.objectset= objects.OBJECTSET(datapath,"objectset")
 		self.objects  = []
