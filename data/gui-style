@@ -1,0 +1,25 @@
+gui-image.png
+#border#
+left     =
+right    =
+top      =
+bottom   =
+l_bottom =
+r_bottom =
+l_top    =
+r_top    =
+#border-active#
+left     =
+right    =
+top      =
+bottom   =
+l_bottom =
+r_bottom =
+l_top    =
+r_top    =
+#padding#
+left   =
+right  =
+top    =
+bottom =
+

@@ -8,6 +8,10 @@
 263,0=player.move.ul
 264,0=player.move.u
 265,0=player.move.ur
+273,0=player.move.u
+274,0=player.move.d
+275,0=player.move.r
+276,0=player.move.l
 #Object keys for aggro and uncareful movement:
 257,1=object.move.ld
 258,1=object.move.d
@@ -18,8 +22,17 @@
 263,1=object.move.ul
 264,1=object.move.u
 265,1=object.move.ur
+273,1=object.move.u
+274,1=object.move.d
+275,1=object.move.r
+276,1=object.move.l
 #Interface(GUI) keys:
 27,1=game.exit
-13,1,0=world.regen
+13,1,0=game.world.regen
 13,0=gui.confirm
 27,0=gui.cancel
+122,0=object.act.teleport.target
+120,0=object.act.cast.target
+267,1=player.switch.previous
+268,1=player.switch.next
+269,0=object.act.cast.target.target

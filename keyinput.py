@@ -57,8 +57,8 @@ class KEYMAP:
 		FILE=open(os.path.join(datapath, filename),"r")
 		full=FILE.read()
 		FILE.close()
-		legitchars  = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z','0','1','2','3','4','5','6','7','8','9']
-		funcchars = [',','.','=','-',':']
+		legitchars  = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z','0','1','2','3','4','5','6','7','8','9',':']
+		funcchars = [',','.','=','-']
 		endl      = [chr(10),';']
 		key       = 0
 		mod       = 0

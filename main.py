@@ -1,9 +1,8 @@
 import sys, os, pygame, psyco
 from pygame.locals import *
 import gameconstants as gc
-import map, debug, tileset, utilities, objects, keyinput #, gui
+import map, debug, tileset, utilities, objects, keyinput, gui
 
-psyco.profile()
 psyco.full()
 
 if not pygame.font: print 'Warning, fonts disabled'
@@ -34,8 +33,9 @@ class PLAYER:
 		self.color        = (0,0,0)
 	def update(self):
 		if self.camFocus!=0:
-			self.camPosition= (self.camFocus.position[0]-self.screenSize[0]/64,self.camFocus.position[1]-self.screenSize[1]/64)
+			self.camPosition= (self.camFocus.position[0],self.camFocus.position[1])
 	def getInput(self,action):
+		#print action
 		if action[0]=='player':
 			if action[1]=='move':
 				self.camFocus.execAction('move',{'vector':action[2],'mode':self.camFocus.getProp("moveMode")})
@@ -43,7 +43,7 @@ class PLAYER:
 			if action[1]=='move':
 				self.camFocus.execAction('move',{'vector':action[2],'mode':self.camFocus.getProp("moveMode2")})
 			elif action[1]=='act':
-				if len(action)>2: self.camFocus.execAction(action[2],{'prop':action[3]})
+				if len(action)>2: self.camFocus.execAction(action[2],action[3:len(action)])
 				else: self.camFocus.execAction(action[1],{})
 		return 0
 	def Type(self): return "PLAYER"
@@ -80,6 +80,7 @@ class GAME:
 		self.objects  = []
 		self.objects += [objects.OBJECT(self,1)]
 		self.players[0].camFocus=self.objects[0]
+		self.viewport = gui.VIEWPORT((640,480),self,{'player':self.players[0],'datapath':datapath})
 		self.tileset  = tileset.TILESET()
 		self.gamemap  = map.GLOBALMAP(self,72,8,64,24)
 		self.tileset.fromFile(datapath,"tileset")
@@ -96,7 +97,8 @@ class GAME:
 			#if self.mapregen==1: self.mapregen=0; self.gamemap=map.GLOBALMAP(self,72,32,48,16)
 			self.keyinput.keyInputRepeat(self)
 			for p in self.players: p.update()
-			self.gamemap.drawMap(self.screen,self.tileset,self.players[0],self.objects, self.objectset)
+			self.screen.blit(self.viewport.requestVisuals(),(0,0))
+			#self.gamemap.drawMap(self.screen,self.tileset,self.players[0],self.objects, self.objectset)
 			#self.screen.blit(self.tileset.tileset,(0,0),self.tileset.tileDefinition[1].images[0])
 			pygame.display.flip()
 		debug.debugMessage(3, "  Main loop off.")
@@ -107,6 +109,7 @@ class GAME:
 			if event.type == QUIT:
 				return
 			elif event.type == KEYDOWN:
+				#print event.key,pygame.key.get_mods()
 				self.keyinput.keyInput          (  event.key, pygame.key.get_mods() , self )
 				self.keyinput.keyInputActivate  (  event.key, pygame.key.get_mods()  )
 			elif event.type == KEYUP:
@@ -119,13 +122,10 @@ class GAME:
 		#print "Received following input: "+str(action)
 		if   (action[0] == 'game'):
 			if   action[1]=='exit':  self.run=0
-		elif (action[0] == 'world'):
-			if   action[1]=='regen': self.gamemap=map.GLOBALMAP(self,72,32,48,16)
-			#elif action[2]=='debug':
-			#	if action[3]=='on': debug = 1
-			#	else: debug = 0
-		elif (action[0] == 'player'): self.players[0].getInput(action)
-		elif (action[0] == 'object'): self.players[0].getInput(action)
+			elif action[1]=='world':
+				if   action[2]=='regen': self.gamemap=map.GLOBALMAP(self,72,32,48,16)
+		else: self.viewport.getInput(action)
+		#elif (action[0] == 'object'): self.viewport.getInput(action)
 if __name__ == '__main__':
 	game=GAME()
 	game.main()

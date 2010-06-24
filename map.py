@@ -71,6 +71,7 @@ class LOCALMAP:
 		self.cachedimage="NULL"
 		self.tileVariation=[[]]
 		self.generate(generator,positionX,positionY)
+		#self.objectsIn=[]
 	def requestChunkImage(self,tileset):
 		if self.cachedimage == "NULL":
 			self.cachedimage=pygame.Surface((1024,1024))
@@ -127,6 +128,7 @@ class LOCALMAP:
 class GLOBALMAP:
 	def __init__(self,parent,big,small,climate,lake):
 		self.chunkCollection={}
+		self.objCache={}
 		self.parent=parent
 		self.generator=[]
 		debug.debugMessage(3," Initializing world map...")
@@ -166,9 +168,12 @@ class GLOBALMAP:
 			return 1
 		else:
 			return 0
-	def drawMap(self, screen, tileset, player, objects, objectset):
-		positionX = player.camPosition[0]
-		positionY = player.camPosition[1]
+	def drawMap(self, size, tileset, position, objects, objectset):
+		#self.player.world.gamemap.drawMap(self.visuals.get_size(), self.player.world.tileset, self.player.camFocus.position, self.player.world.objects, self.player.world.objectset)
+		screen=pygame.Surface(size)
+		positionX = position[0]#-size[0]/64
+		positionY = position[1]#-size[1]/64
+		#print position
                 screen.fill((0,0,0))
 		for x in range(0,2):
 			for y in range(0,2):
@@ -184,7 +189,9 @@ class GLOBALMAP:
                                 if x == 0 and y == 0:
                                         self.uncacheChunks((chunk_x,chunk_y))
 		for i in objects:
+			#print i.position
 			screen.blit(objectset.graphics,(32*(i.position[0]-positionX),32*(i.position[1]-positionY)),objectset.objectDefinition[i.type].image)
+		return screen
 	def uncacheChunks(self,position):
 		a = self.parent.settings.chunkCacheRange
 		b=0

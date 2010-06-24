@@ -1,8 +1,9 @@
 [--CREDITS--]
 PROGRAMMING:
-	Asmageddon
+	Engine           - Asmageddon
+	Game             - Asmageddon
 
-PROGRAMMING AID&HELP:
+PROGRAMMING AID, HELP & ADVISE:
 	Grumbel
 
 GRAPHICS:
@@ -10,13 +11,11 @@ GRAPHICS:
 	/data/player.png - stolen from DC Stone Soup, modified a bit
 
 DATA FILES:
-	/data/tileset    - Asmageddon
-	/data/objectset  - Asmageddon
+	Everything       - Asmageddon
 
 
 
 [--MODDING REFERENCE--]
-
 1) To create a mod you have to create a new directory containing dngn.png and objects1.png graphics, tileset and objectset text files containing game data definitions.
 
 2) Tileset editing:
@@ -128,12 +127,9 @@ world.regen
 
 NOTE: The object.act is the only command with 4/5 sections - act makes object, which active player(s) focus is on do ACTIONNAME with property passed to props dict.
 	property aside of anything else can be:
-	TARGET - makes player have to first target something if nothing is targeted, otherwise passes current target
-	FORCETARGET - makes player have to target something, even if he is already targeting something
-	subproperties of TARGET and FORCETARGET can be:
-		TERRAIN - player have got to target terrain
-		OBJECT - player have to target an object
-		ITEM - player have got to target a item
-		MONSTER - player have to target a monster
-		ITEMGROUND - item on ground
-		ITEMCONTENTS - contents of active object(ie. inventory)
+	target - makes player have to first target something if nothing is targeted, otherwise passes current target
+	ftarget - makes player have to target something, even if he is already targeting something
+	Fifth parameter is type and class of target
+	subproperties of target:class and ftarget:class can be all possible classes of your objects, but few are predefined:
+		object
+		terrain

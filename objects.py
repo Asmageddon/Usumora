@@ -48,8 +48,7 @@ class OBJECTSET:
 		script=""
 		cchar=''
 		current=''
-		for i in range(0,len(full)):
-			cchar=full[i]
+		for cchar in full:
 			if mode==0:
 				if cchar=="=":
 					script=current

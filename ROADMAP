@@ -3,6 +3,7 @@ Already done things will get written down when I have time and will to look onto
 [0.3.x]
 +Add object content support
 +Map more of control system commands onto engine functions, add more of these
++Partition objects to make rendering and collision detection more efficient
 
 [0.4.x]
 +Add GUI
@@ -26,7 +27,6 @@ Already done things will get written down when I have time and will to look onto
     +Add an editor for that
   +Add support for limited size maps
   +Add support for external images, which affect 'heightmap' used to generate current map layout
-+Partition objects to make rendering and collision detection 
 +Add multi-level worlds
 -Bugfixes
 

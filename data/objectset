@@ -6,6 +6,7 @@ name=null_obj
 name=test hero
 script_move=move
 script_teleport=teleport
+script_cast=whack
 move_mode=25
 move_mode2=57
 weight=50
